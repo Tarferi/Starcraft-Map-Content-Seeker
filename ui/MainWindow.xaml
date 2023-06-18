@@ -1,0 +1,86 @@
+﻿<Window x:Class="StarcraftMapContentSeeker0.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:StarcraftMapContentSeeker0"
+        mc:Ignorable="d"
+        Title="Starcraft Map Content Seeker" Height="450" Width="800">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Exit" Click="MenuItem_Click_4" />
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_Wanna talk about it (US only)" Click="MenuItem_Click" />
+                <MenuItem Header="_Hymn for the missing" Click="MenuItem_Click_1" />
+                <Separator />
+                <MenuItem Header="_About" Click="MenuItem_Click_5" />
+            </MenuItem>
+        </Menu>
+        <Grid>
+        
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <GroupBox Header="Input" Margin="5">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Directory:" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="5,0"/>
+                    <CheckBox x:Name="checkRecursive" Content="Recursive" Grid.Column="2" IsThreeState="False" VerticalAlignment="Center" Margin="5,0"/>
+                    <local:FileInput x:Name="fileInput" Grid.Column="1" VerticalAlignment="Center" Width="Auto" Height="Auto" Margin="5,0" />
+                    <Button x:Name="btnRun" Content="Run" Grid.Column="3" Margin="5" Padding="10,5,10,5" Grid.RowSpan="2" Click="btnRun_Click" />
+                    <TextBlock Text="Look for:" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="5,0" Grid.Row="1"/>
+                    <TextBox x:Name="txtSearch" Grid.Row="1" Grid.Column="1" Text="\S+@\S+\.\S+" Margin="5" />
+                    <CheckBox x:Name="checkRegex" Content="Regex" IsChecked="True" IsThreeState="False" Grid.Column="2" VerticalAlignment="Center" Margin="5,0" Grid.Row="1"/>
+                </Grid>
+            </GroupBox>
+
+            <GroupBox Header="Output" Grid.Row="1" Margin="5,0">
+                <Grid>
+                    <ListView x:Name="lstData" SizeChanged="lstData_SizeChanged">
+                        <ListView.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Copy found data" Click="MenuItem_Click_2" />
+                                <MenuItem Header="Copy found file names" Click="MenuItem_Click_3" />
+                            </ContextMenu>
+                        </ListView.ContextMenu>
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Found data"  DisplayMemberBinding="{Binding Content}" />
+                                <GridViewColumn Header="File(s)" DisplayMemberBinding="{Binding Files}" />
+                                <GridViewColumn Header="Total files" Width="70"  DisplayMemberBinding="{Binding FilesCnt}" />
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </Grid>
+            </GroupBox>
+            <GroupBox Header="Status" Grid.Row="2" Margin="5">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="lblStatus" Text="(Status)" Margin="5" />
+                    <TextBlock Text="Scanned maps:" Margin="5" Grid.Column="2" />
+                    <TextBlock x:Name="lblScanned" Text="0" Margin="0,5,5,5" Grid.Column="3" />
+                </Grid>
+            </GroupBox>
+        </Grid>
+    </DockPanel>
+</Window>

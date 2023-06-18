@@ -1,0 +1,50 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32929.386
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StarcraftMapContentSeeker", "StarcraftMapContentSeeker.csproj", "{247BA3B9-2D9C-41B2-852C-728852908477}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "STRExtractor", "STRExtractor\STRExtractor.vcxproj", "{63811AFC-C30F-48EE-A004-FE7FC9384A84}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{247BA3B9-2D9C-41B2-852C-728852908477}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{247BA3B9-2D9C-41B2-852C-728852908477}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{247BA3B9-2D9C-41B2-852C-728852908477}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{247BA3B9-2D9C-41B2-852C-728852908477}.Debug|x64.Build.0 = Debug|Any CPU
+		{247BA3B9-2D9C-41B2-852C-728852908477}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{247BA3B9-2D9C-41B2-852C-728852908477}.Debug|x86.Build.0 = Debug|Any CPU
+		{247BA3B9-2D9C-41B2-852C-728852908477}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{247BA3B9-2D9C-41B2-852C-728852908477}.Release|Any CPU.Build.0 = Release|Any CPU
+		{247BA3B9-2D9C-41B2-852C-728852908477}.Release|x64.ActiveCfg = Release|Any CPU
+		{247BA3B9-2D9C-41B2-852C-728852908477}.Release|x64.Build.0 = Release|Any CPU
+		{247BA3B9-2D9C-41B2-852C-728852908477}.Release|x86.ActiveCfg = Release|Any CPU
+		{247BA3B9-2D9C-41B2-852C-728852908477}.Release|x86.Build.0 = Release|Any CPU
+		{63811AFC-C30F-48EE-A004-FE7FC9384A84}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{63811AFC-C30F-48EE-A004-FE7FC9384A84}.Debug|Any CPU.Build.0 = Debug|Win32
+		{63811AFC-C30F-48EE-A004-FE7FC9384A84}.Debug|x64.ActiveCfg = Debug|x64
+		{63811AFC-C30F-48EE-A004-FE7FC9384A84}.Debug|x64.Build.0 = Debug|x64
+		{63811AFC-C30F-48EE-A004-FE7FC9384A84}.Debug|x86.ActiveCfg = Debug|Win32
+		{63811AFC-C30F-48EE-A004-FE7FC9384A84}.Debug|x86.Build.0 = Debug|Win32
+		{63811AFC-C30F-48EE-A004-FE7FC9384A84}.Release|Any CPU.ActiveCfg = Release|Win32
+		{63811AFC-C30F-48EE-A004-FE7FC9384A84}.Release|x64.ActiveCfg = Release|x64
+		{63811AFC-C30F-48EE-A004-FE7FC9384A84}.Release|x64.Build.0 = Release|x64
+		{63811AFC-C30F-48EE-A004-FE7FC9384A84}.Release|x86.ActiveCfg = Release|Win32
+		{63811AFC-C30F-48EE-A004-FE7FC9384A84}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {88D2EA99-AD1F-4B6B-B523-76C30D4918AF}
+	EndGlobalSection
+EndGlobal
