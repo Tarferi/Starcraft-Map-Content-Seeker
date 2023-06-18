@@ -1,4 +1,4 @@
-# Starcraft Map Repository
+# Starcraft Map Content Seeker
 This program was made by Tarferi for his friend SI.
 \
 Its primary function is to scan Starcraft map folders for contact info of friends long lost.
@@ -7,7 +7,7 @@ Initial regex is for emails. Scan for emails or any other contact info and find 
 \
 Get in touch.
 \
-Life is short
+Life is short.
 
 ![Screenshot](https://rion.cz/scmcs/scr.png "Screenshot")
 
