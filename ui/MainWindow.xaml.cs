@@ -17,7 +17,7 @@ namespace StarcraftMapContentSeeker0 {
         private bool recursive = true;
 
         TheLib lib = null;
-        byte[] buffer = new byte[0xffff];
+        byte[] buffer = new byte[0x3200000];
         int bufferLength = 0;
 
         public MainWindow() {
@@ -140,7 +140,9 @@ namespace StarcraftMapContentSeeker0 {
 
         private void ProcessFile(string path) {
             SetLabel("Processing " + path);
-            bufferLength = lib.ReadSTR(path, ref buffer);
+            int required = 0;
+            bufferLength = lib.ReadSTR(path, ref buffer, ref required);
+            // TODO: if more data are required, allocate buffer dynamically
             if (bufferLength > 2) {
                 bool error = false;
                 ushort strings = ShortAt(0, ref error);

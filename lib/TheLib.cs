@@ -24,7 +24,7 @@ namespace StarcraftMapContentSeeker0.lib {
 
 #endif
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void ProcessFunc(IntPtr input, IntPtr output, IntPtr outputSize, IntPtr writtenLength);
+        public delegate void ProcessFunc(IntPtr input, IntPtr output, IntPtr outputSize, IntPtr writtenLength, IntPtr requiredLength);
 
         ProcessFunc _Process = null;
 
@@ -48,14 +48,17 @@ namespace StarcraftMapContentSeeker0.lib {
 #endif
         }
 
-        public int ReadSTR(string inputFile, ref byte[] target) {
+        public int ReadSTR(string inputFile, ref byte[] target, ref int requiredLength) {
             unsafe {
                 byte[] inputFileBytes = Encoding.UTF8.GetBytes(inputFile);
                 fixed(byte* inputFileBytesPtr = inputFileBytes) {
                     fixed (byte* targetPtr = target) {
                         UInt32 written = 0;
                         IntPtr sizePtr = new IntPtr(&written);
-                        _Process(new IntPtr(inputFileBytesPtr), new IntPtr(targetPtr), new IntPtr(target.Length), sizePtr);
+                        UInt32 required = 0;
+                        IntPtr requiredPtr = new IntPtr(&required);
+                        _Process(new IntPtr(inputFileBytesPtr), new IntPtr(targetPtr), new IntPtr(target.Length), sizePtr, requiredPtr);
+                        requiredLength = (int)required;
                         return (int)written;
                     }
                 }

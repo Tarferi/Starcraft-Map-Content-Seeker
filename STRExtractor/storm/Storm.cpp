@@ -1,5 +1,5 @@
 #include "Storm.h"
-#include "../chk/Section.h"
+#include "../storm/StormLib.h"
 
 bool decompressLib(char** data, unsigned int* size) {
 	bool error = false;
@@ -57,244 +57,148 @@ Storm::~Storm() {
 	LOG_INFO("STORM", "Storm library uninitiated");
 }
 
-MapFile* Storm::readSCX(char* filePath, bool* error) {
+bool ReadFixedLengthString(char* data, unsigned int dataLength, unsigned int& position, char* target, int size) {
+	if (position + size <= dataLength) {
+		memcpy(target, &(data[position]), size);
+		position += size;
+		return true;
+	}
+	return false;
+}
+
+bool ReadShort(char* data, unsigned int dataLength, unsigned int& position, unsigned short* target) {
+	char tmp[2];
+	if (ReadFixedLengthString(data, dataLength, position, tmp, 2)) {
+		unsigned short x1 = tmp[0] & 0xff;
+		unsigned short x2 = tmp[1] & 0xff;
+		*target = (x2 << 8) + x1;
+		return true;
+	}
+	return false;
+}
+
+bool ReadInt(char* data, unsigned int dataLength, unsigned int& position, unsigned int* target) {
+	char tmp[4];
+	if (ReadFixedLengthString(data, dataLength, position, tmp, 4)) {
+		unsigned int x1 = tmp[0] & 0xff;
+		unsigned int x2 = tmp[1] & 0xff;
+		unsigned int x3 = tmp[2] & 0xff;
+		unsigned int x4 = tmp[3] & 0xff;
+		*target = (x4 << 24) + (x3 << 16) + (x2 << 8) + x1;
+		return true;
+	}
+	return false;
+}
+
+void GetSTR(char* data, int dataLength, char** dataStr, int* dataStrLength, int* dataRequired) {
+	unsigned int position = 0;
+
+	bool error = false;
+	while (!error) {
+		char name[] = { 0,0,0,0,0 };
+		unsigned int length = 0;
+
+		error |= !ReadFixedLengthString(data, dataLength, position, name, 4);
+		if (error) { break; }
+		error |= !ReadInt(data, dataLength, position, &length);
+		if (error) { break; }
+
+		if (!strcmp(name, "STR ")) {
+			unsigned int remainingLength = dataLength - position;
+			*dataRequired = remainingLength;
+			unsigned int strRealLength = remainingLength < length ? remainingLength : length;
+			if (strRealLength > 0) {
+				MALLOC_N(STR, char, strRealLength, { return; });
+				memcpy(STR, &(data[position]), strRealLength);
+				*dataStr = STR;
+				*dataStrLength = strRealLength;
+				return;
+			}
+		} else {
+			if (position + length <= (unsigned int)dataLength) {
+				position += length;
+			} else {
+				break;
+			}
+		}
+	}
+}
+
+bool Storm::readSTR(char* filePath, char** strContent, int* strContentSize, int* dataRequired) {
 
 	HANDLE mapFile;
 	void* scx = SFileOpenArchive(filePath, 0, 0x00000100, &mapFile);
 	if (!scx) {
-		LOG_ERROR("STORM", "Failed to open file %s", filePath)
-			* error = true;
-		return nullptr;
+		LOG_ERROR("STORM", "Failed to open file %s", filePath);
+		return false;
 	}
 	LOG_INFO("STORM", "Opened file %s", filePath);
+		
+	char* STRDATA = nullptr;
+	int STRDATALength = 0;
 
-	SFILE_FIND_DATA data;
+	auto forEachFile = [this, &mapFile](auto cb) {
+		SFILE_FIND_DATA data;
+		HANDLE searchHandle = SFileFindFirstFile(mapFile, "*", &data, (const char*)0);
 
-	HANDLE searchHandle = SFileFindFirstFile(mapFile, "*", &data, ( const char*) 0);
+		do {
+			int fileSize = data.dwFileSize;
 
-	Array<char*>* fileNames = new Array<char*>();
-	Array<unsigned int>* fileSizes = new Array<unsigned int>();
-	Array<char*>* filesContents = new Array<char*>();
+			auto reader = [&]() -> char* {
+				HANDLE fileH;
+				MALLOC_N(fileContents, char, data.dwFileSize, { SFileFindClose(searchHandle); return nullptr; });
+				SFileOpenFileEx(mapFile, data.cFileName, 0, &fileH);
+				DWORD read;
+				SFileReadFile(fileH, fileContents, data.dwFileSize, &read, 0);
+				LOG_INFO("STORM", "Read file %s from %s", data.cFileName, filePath);
+				if (read != data.dwFileSize) {
+					SFileCloseFile(fileH);
+					free(fileContents);
+					return nullptr;
+				} else {
+					SFileCloseFile(fileH);
+					return fileContents;
+				}
+			};
 
-	bool hasScenarioChk = false;
+			if (strcmp(data.cFileName, "(listfile)")) {
+				cb(data.cFileName, fileSize, reader);
+			}
 
-	do {
+		} while (SFileFindNextFile(searchHandle, &data));
+		SFileFindClose(searchHandle);
+	};
 
-		fileSizes->append(data.dwFileSize);
-		GET_CLONED_STRING(fileName, data.cFileName, {fileNames->freeItems(); filesContents->freeItems(); SFileFindClose(searchHandle); SFileCloseArchive(mapFile); delete fileNames; delete fileSizes; delete filesContents; return nullptr; });
-		fileNames->append(fileName);
-		HANDLE fileH;
-		MALLOC_N(fileContents, char, data.dwFileSize, {fileNames->freeItems(); filesContents->freeItems(); SFileFindClose(searchHandle); SFileCloseArchive(mapFile); delete fileNames; delete fileSizes; delete filesContents; return nullptr; });
-		SFileOpenFileEx(mapFile, data.cFileName, 0, &fileH);
-		DWORD read;
-		SFileReadFile(fileH, fileContents, data.dwFileSize, &read, 0);
-		LOG_INFO("STORM", "Read file %s from %s", data.cFileName, filePath);
-		if (read != data.dwFileSize) {
-			//LOG_ERROR("STORM", "Read only %d of %d total\n", read, data.dwFileSize);
+	auto lookForCHK = [&](char* fileName, int fileSize, auto reader) {
+		if (!STRDATA && !strcmp(fileName, "staredit\\scenario.chk")) {
+			char* chk = reader();
+			if (chk) {
+				GetSTR(chk, fileSize, &STRDATA, &STRDATALength, dataRequired);
+				free(chk);
+			}
 		}
-		SFileCloseFile(fileH);
-		filesContents->append(fileContents);
+	};
 
-	} while (SFileFindNextFile(searchHandle, &data));
+	auto lookForAnyCHK = [&](char* fileName, int fileSize, auto reader) {
+		if (!STRDATA) {
+			char* data = reader();
+			if (data) {
+				GetSTR(data, fileSize, &STRDATA, &STRDATALength, dataRequired);
+				free(data);
+			}
+		}
+	};
 
-	SFileFindClose(searchHandle);
+	forEachFile(lookForCHK);
+	if (!STRDATA) {
+		forEachFile(lookForAnyCHK);
+	}
+
 	SFileCloseArchive(mapFile);
-	LOG_INFO("STORM", "Closed file %s", filePath);
-	MapFile* mf = new MapFile(filePath, filesContents, fileSizes, fileNames, error);
-	return mf;
-}
-
-bool Storm::repack(char* file, MapFile* mf, bool onlyCHK) {
-
-	unsigned int CHKIndex = 0;
-	CHK* chk = mf->getCHK(CHKReadMode::Partial, &CHKIndex);
-	if (chk == nullptr) { return false; }
-
-	unsigned int files = mf->fileNames->getSize() + 1;
-	if (files < 4) {
-		files = 4;
+	if (STRDATA) {
+		*strContent = STRDATA;
+		*strContentSize = STRDATALength;
+		return true;
 	}
-	remove(file);
-	HANDLE fl;
-
-	if (!SFileCreateArchive(( wchar_t*) file, 0, files, &fl)) {
-		LOG("STORM", "Failed creating archive \"%s\"", file);
-		return false;
-	}
-
-	{
-		// Write CHK first
-		char* chkFile = mf->getCHKFileName();
-		char* contents;
-		unsigned int fileSize;
-		WriteBuffer* wb = new WriteBuffer();
-		if (!chk->write(wb)) {
-			SFileCloseArchive(fl);
-			delete wb;
-			return false;
-		}
-		wb->getWrittenData(( unsigned char**) (&contents), &fileSize);
-		HANDLE fh;
-		if (!SFileCreateFile(fl, chkFile, 0, fileSize, 0, 0x200, &fh)) {
-			if (!SFileCreateFile(fl, "staredit\\scenario.chk", 0, fileSize, 0, 0x00000200, &fh)) {
-				SFileCloseArchive(fl);
-				delete wb;
-				return false;
-			}
-		}
-		if (!SFileWriteFile(fh, contents, fileSize, 0x2)) {
-			SFileFinishFile(fh);
-			SFileCloseArchive(fl);
-			delete wb;
-			return false;
-		}
-		if (!SFileFinishFile(fh)) {
-			SFileCloseArchive(fl);
-			delete wb;
-			return false;
-		}
-		delete wb;
-	}
-
-	if (!onlyCHK) {
-		// Write every other files
-		for (unsigned int fileIndex = 0; fileIndex < mf->fileNames->getSize(); fileIndex++) {
-			if (fileIndex != CHKIndex) {
-				LOG("STORM", "Found file \"%s\" with index %d, exporting as \"%s\"", file->fileName, file->v2Index, STR->getRawString(file->v2Index));
-
-				char* fileName = mf->fileNames->get(fileIndex);
-				char* contents = mf->contents->get(fileIndex);
-				unsigned int fileSize = mf->dataLengths->get(fileIndex);
-				if (!strcmp(fileName, "(listfile)") || fileSize <= 1) {
-					continue;
-				}
-
-				HANDLE fh;
-				if (!SFileCreateFile(fl, fileName, 0, fileSize, 0, 0x200, &fh)) {
-					LOG("STORM", "Failed creating file \"%s\" in archive \"%s\"", fileName, file->fileName);
-					SFileCloseArchive(fl);
-					return false;
-				}
-				if (!SFileWriteFile(fh, contents, fileSize, 0x2)) {
-					LOG("STORM", "Failed writing file \"%s\" (%d bytes) in archive \"%s\"", fileName, fileSize, file->fileName);
-					SFileFinishFile(fh);
-					SFileCloseArchive(fl);
-					return false;
-				}
-				SFileFinishFile(fh);
-			}
-		}
-	}
-
-	//SFileCompactArchive(fl, 0, 0);
-	SFileCloseArchive(fl);
-	return true;
-}
-
-bool Storm::writeSCX(char* ffile, MapFile* mf, bool _repack, bool onlyCHK) {
-	GET_CLONED_STRING(file, ffile, {});
-	for (unsigned int cI = 0; cI < strlen(file); cI++) {
-		if (file[cI] == '\\') {
-			file[cI] = '/';
-		}
-	}
-	remove(file);
-	if (_repack) {
-		if (repack(file, mf, onlyCHK)) {
-			free(file);
-			return true;
-		}
-		free(file);
-		return false;
-	}
-	{
-		FILE* f;
-		if (fopen_s(&f, mf->originalInputFile, "rb")) {
-			free(file);
-			LOG_ERROR("STORM", "Failed to open original file");
-			return false;
-		}
-		bool error = false;
-		ReadBuffer rb(f, &error);
-		fclose(f);
-		if (error || !rb.good) {
-			free(file);
-			return false;
-		}
-		unsigned int dataSize = rb.getDataSize();
-		unsigned char* data = rb.readArray(dataSize, &error);
-		WriteBuffer wb;
-		wb.writeArray(data, dataSize, &error);
-		if (error) {
-			free(file);
-			return false;
-		}
-		delete data;
-		wb.writeToFile(file, &error);
-		if (error) {
-			free(file);
-			return false;
-		}
-	}
-
-	char* contents;
-	unsigned int fileSize;
-	WriteBuffer wb;
-	CHK* chk = mf->getCHK(CHKReadMode::Partial);
-	if (!chk->write(&wb)) {
-		free(file);
-		return false;
-	}
-	wb.getWrittenData(( unsigned char**) (&contents), &fileSize);
-
-	HANDLE mapFile = nullptr;
-	if (!SFileOpenArchive(file, 0, 0x00000200, &mapFile)) {
-		LOG_ERROR("STORM", "Failed to open file %s", file)
-			free(file);
-		return false;
-	}
-	LOG_INFO("STORM", "Opened file %s for writing", file);
-
-	HANDLE newFileH;
-	char* fName = mf->getCHKFileName();
-
-	bool removed = SFileRemoveFile(mapFile, fName, 0);
-
-	if (!SFileCreateFile(mapFile, fName, 0, fileSize, 0, 0x80000000 | 0x00000200, &newFileH)) {
-		if (!SFileCreateFile(mapFile, fName, 0, fileSize, 0, 0x80000000, &newFileH)) {
-
-
-
-			if (!SFileCreateFile(mapFile, fName, 0, fileSize, 0, 0x00000200, &newFileH)) {
-				if (!SFileCreateFile(mapFile, fName, 0, fileSize, 0, 0, &newFileH)) {
-
-					if (!SFileCreateFile(mapFile, "staredit\\scenario.chk", 0, fileSize, 0, 0x00000200, &newFileH)) {
-						if (!SFileCreateFile(mapFile, "staredit\\scenario.chk", 0, fileSize, 0, 0, &newFileH)) {
-							SFileCloseArchive(mapFile);
-							free(file);
-							return false;
-							//return repack(ffile, mf);
-						}
-					}
-				}
-			}
-		}
-	}
-
-	if (!SFileWriteFile(newFileH, contents, fileSize, 0x08 | 0x02)) {
-		SFileFinishFile(newFileH);
-		SFileCloseArchive(mapFile);
-		free(file);
-		return false;
-	}
-	if (!SFileFinishFile(newFileH)) {
-		SFileCloseArchive(mapFile);
-		free(file);
-		return false;
-	}
-
-	SFileCompactArchive(mapFile, 0, 0);
-	SFileCloseArchive(mapFile);
-	free(file);
-	return true;
+	return false;
 }

@@ -16,14 +16,8 @@
     <Filter Include="Header Files\common">
       <UniqueIdentifier>{6e358e9a-6a11-404b-ae2d-e8c7ad835ec5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\chk">
-      <UniqueIdentifier>{fc87cbd2-25f5-410f-be2d-98bae1614a84}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\common">
       <UniqueIdentifier>{c91858fd-bd02-4120-b510-bfa66061d2e6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\chk">
-      <UniqueIdentifier>{ef691d77-07ba-410e-8863-ba3f5ae954b1}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\storm">
       <UniqueIdentifier>{0dba7ed0-7074-4680-a2ed-e215d3066be0}</UniqueIdentifier>
@@ -39,50 +33,20 @@
     <ClCompile Include="common\miniz.cpp">
       <Filter>Source Files\common</Filter>
     </ClCompile>
-    <ClCompile Include="common\ReadBuffer.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="common\stdafx.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="common\WriteBuffer.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
     <ClCompile Include="common\common.cpp">
       <Filter>Source Files\common</Filter>
     </ClCompile>
     <ClCompile Include="common\Mem.cpp">
       <Filter>Source Files\common</Filter>
     </ClCompile>
-    <ClCompile Include="chk\CHK.cpp">
-      <Filter>Source Files\chk</Filter>
-    </ClCompile>
-    <ClCompile Include="chk\MapFile.cpp">
-      <Filter>Source Files\chk</Filter>
-    </ClCompile>
-    <ClCompile Include="chk\Section.cpp">
-      <Filter>Source Files\chk</Filter>
-    </ClCompile>
     <ClCompile Include="storm\Storm.cpp">
+      <Filter>Source Files\storm</Filter>
+    </ClCompile>
+    <ClCompile Include="storm\TinyStorm.cpp">
       <Filter>Source Files\storm</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common\ReadBuffer.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="common\resource.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="common\stdafx.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="common\targetver.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="common\WriteBuffer.h">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
     <ClInclude Include="common\common.h">
       <Filter>Header Files\common</Filter>
     </ClInclude>
@@ -92,22 +56,16 @@
     <ClInclude Include="common\miniz.h">
       <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="chk\MapFile.h">
-      <Filter>Header Files\chk</Filter>
-    </ClInclude>
-    <ClInclude Include="chk\Section.h">
-      <Filter>Header Files\chk</Filter>
-    </ClInclude>
-    <ClInclude Include="chk\Trigger.h">
-      <Filter>Header Files\chk</Filter>
-    </ClInclude>
-    <ClInclude Include="chk\CHK.h">
-      <Filter>Header Files\chk</Filter>
-    </ClInclude>
     <ClInclude Include="storm\Storm.h">
       <Filter>Header Files\storm</Filter>
     </ClInclude>
     <ClInclude Include="storm\StormLib.h">
+      <Filter>Header Files\storm</Filter>
+    </ClInclude>
+    <ClInclude Include="storm\TinyStorm.h">
+      <Filter>Header Files\storm</Filter>
+    </ClInclude>
+    <ClInclude Include="storm\stormdll.h">
       <Filter>Header Files\storm</Filter>
     </ClInclude>
   </ItemGroup>

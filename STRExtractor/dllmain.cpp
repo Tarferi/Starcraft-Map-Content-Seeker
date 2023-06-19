@@ -1,9 +1,15 @@
-// dllmain.cpp : Defines the entry point for the DLL application.
-#include "common/common.h"
-#include "storm/Storm.h"
-#include <regex>
-#include <Windows.h>
+//#define STOCK_STORM
+//#define BUILD_EXE
 
+#include "common/common.h"
+#include <Windows.h>
+#ifdef STOCK_STORM
+#include "storm/TinyStorm.h"
+#else
+#include "storm/Storm.h"
+#endif
+
+#ifndef STOCK_STORM
 static Storm* GlobalStorm = nullptr;
 
 void UnloadStorm() {
@@ -19,36 +25,38 @@ bool LoadStorm() {
     GlobalStorm = new Storm(&error);
     return !error;
 }
+#endif
 
-void realize0(char* input, char* output, uint32 outputSize, uint32* writteLength) {
+void realize0(char* input, char* output, uint32 outputSize, uint32* writteLength, uint32* requiredLength) {
     bool error = false;
     *writteLength = 0;
-    MapFile* mf = GlobalStorm->readSCX(input, &error);
-    if (mf) {
-        CHK* chk = mf->getCHK(CHKReadMode::Partial);
-        if (chk) {
-            Section* str = chk->getSection("STR ");
-            if (str) {
-                WriteBuffer wb;
-                if (str->writeToBuffer(&wb)) {
-                    unsigned char* data = nullptr;
-                    unsigned int length = 0;
-                    wb.getWrittenData(&data, &length);
-                    unsigned int toCopy = outputSize < length ? outputSize : length;
-                    memcpy(output, data, toCopy);
-                    *writteLength = toCopy;
-                }
-            }
-        }
-        delete mf;
+    char* str = nullptr;
+    int strlength = 0;
+    int reqLength = 0;
+
+#ifdef STOCK_STORM
+    TinyStorm ts;
+    if (!ts.IsValid()) {
+        return;
+    }
+    if(ts.readSTR(input, &str, &strlength, &reqLength)) {
+#else
+    if (GlobalStorm->readSTR(input, &str, &strlength, &reqLength)) {
+#endif
+        unsigned int toCopy = outputSize < (uint32)strlength ? outputSize : strlength;
+        memcpy(output, str, toCopy);
+        *writteLength = toCopy;
+        *requiredLength = reqLength;
+        free(str);
     }
 }
 
-LIBRARY_API void __cdecl realize(void* input, void* output, void* outputSize, void* writteLength) {
-    realize0((char*)input, (char*)output, (uint32)outputSize, (uint32*)writteLength);
+LIBRARY_API void __cdecl realize(void* input, void* output, void* outputSize, void* writteLength, void* requiredLength) {
+    realize0((char*)input, (char*)output, (uint32)outputSize, (uint32*)writteLength, (uint32*)requiredLength);
 }
 
 BOOL APIENTRY DllMain( HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved) {
+#ifndef STOCK_STORM
     switch (ul_reason_for_call) {
     case DLL_PROCESS_ATTACH:
         LoadStorm();
@@ -57,6 +65,25 @@ BOOL APIENTRY DllMain( HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpRese
         UnloadStorm();
         break;
     }
+#endif
     return TRUE;
 }
 
+#ifdef BUILD_EXE
+
+static char tmp[0x7ffff];
+
+int main() {
+#ifndef STOCK_STORM
+    LoadStorm();
+#endif
+    uint32 sz = 0;
+    uint32 szreq = 0;
+    realize0((char*)"C:\\Users\\Tom\\Documents\\StarCraft\\Maps\\Download\\! BEST_FASTEST.scm", tmp, sizeof(tmp), &sz, &szreq);
+#ifndef STOCK_STORM
+    UnloadStorm();
+#endif
+    return 0;
+}
+
+#endif
