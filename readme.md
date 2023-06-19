@@ -15,5 +15,5 @@ Features:
 * Scan Starcraft map folders for any map string, including regex.
 
 TODO:
-* Perhaps cleanup in the future
+* Perhaps encoding support in the future
 
