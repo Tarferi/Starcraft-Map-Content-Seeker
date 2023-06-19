@@ -2,6 +2,7 @@
 using StarcraftMapContentSeeker0.utils;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -96,13 +97,31 @@ namespace StarcraftMapContentSeeker0 {
             return 0;
         }
 
+        static bool IsLegalUnicode(string str) {
+            for (int i = 0; i < str.Length; i++) {
+                var uc = char.GetUnicodeCategory(str, i);
+                if (uc == UnicodeCategory.Surrogate) {
+                    return false;
+                } else if (uc == UnicodeCategory.OtherNotAssigned) {
+                    return false;
+                }
+                if (char.IsHighSurrogate(str, i)) {
+                    i++;
+                }
+            }
+
+            return true;
+        }
+
         string StringAt(int idx, ref bool error) {
             if (!error) {
                 if (idx < bufferLength) {
                     for(int i = idx; i < bufferLength; i++) {
                         if (buffer[i] == 0) {
                             if (i > idx) {
-                                return Encoding.UTF8.GetString(buffer, idx, i - idx);
+                                string tmp1 = Encoding.UTF8.GetString(buffer, idx, i - idx);
+                                //tmp1 = Regex.Replace(tmp1, @"[^\u001F-\u007F]+", string.Empty);
+                                return tmp1;
                             } else {
                                 return "";
                             }
@@ -249,10 +268,14 @@ namespace StarcraftMapContentSeeker0 {
             Environment.Exit(0);
         }
 
-
         private void MenuItem_Click_5(object sender, RoutedEventArgs e) {
             ui.wndAbout abt = new ui.wndAbout();
             abt.ShowDialog();
+        }
+
+        private void Window_Closed(object sender, EventArgs e) {
+            Application.Current.Shutdown();
+            Environment.Exit(0);
         }
     }
 }

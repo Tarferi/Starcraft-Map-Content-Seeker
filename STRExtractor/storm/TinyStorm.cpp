@@ -49,7 +49,7 @@ bool TinyStorm::readSTR(char* filePath, char** strContent, int* strContentSize, 
 			BOOL resultChk = this->SFileOpenFileEx(NULL, "staredit\\scenario.chk", 0, &hFile);
 			if (resultChk) {
 				LONG filesize = this->SFileGetFileSize(hFile, NULL);
-				if (filesize >= 0 && filesize <= 1024 * 1024 * 300) { // 300 MB Limit
+				if (filesize >= 0 && filesize <= MAX_FILE_LIMIT) {
 					MALLOC_N(tmp, char, filesize, { ; });
 					if (tmp) {
 						DWORD bytesread = 0;

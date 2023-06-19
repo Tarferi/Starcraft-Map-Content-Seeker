@@ -107,7 +107,7 @@ void GetSTR(char* data, int dataLength, char** dataStr, int* dataStrLength, int*
 			unsigned int remainingLength = dataLength - position;
 			*dataRequired = remainingLength;
 			unsigned int strRealLength = remainingLength < length ? remainingLength : length;
-			if (strRealLength > 0) {
+			if (strRealLength > 0 && strRealLength < MAX_FILE_LIMIT) {
 				MALLOC_N(STR, char, strRealLength, { return; });
 				memcpy(STR, &(data[position]), strRealLength);
 				*dataStr = STR;
@@ -146,18 +146,22 @@ bool Storm::readSTR(char* filePath, char** strContent, int* strContentSize, int*
 
 			auto reader = [&]() -> char* {
 				HANDLE fileH;
-				MALLOC_N(fileContents, char, data.dwFileSize, { SFileFindClose(searchHandle); return nullptr; });
-				SFileOpenFileEx(mapFile, data.cFileName, 0, &fileH);
-				DWORD read;
-				SFileReadFile(fileH, fileContents, data.dwFileSize, &read, 0);
-				LOG_INFO("STORM", "Read file %s from %s", data.cFileName, filePath);
-				if (read != data.dwFileSize) {
-					SFileCloseFile(fileH);
-					free(fileContents);
-					return nullptr;
+				if (data.dwFileSize > 0 && data.dwFileSize < MAX_FILE_LIMIT) {
+					MALLOC_N(fileContents, char, data.dwFileSize, { SFileFindClose(searchHandle); return nullptr; });
+					SFileOpenFileEx(mapFile, data.cFileName, 0, &fileH);
+					DWORD read;
+					SFileReadFile(fileH, fileContents, data.dwFileSize, &read, 0);
+					LOG_INFO("STORM", "Read file %s from %s", data.cFileName, filePath);
+					if (read != data.dwFileSize) {
+						SFileCloseFile(fileH);
+						free(fileContents);
+						return nullptr;
+					} else {
+						SFileCloseFile(fileH);
+						return fileContents;
+					}
 				} else {
-					SFileCloseFile(fileH);
-					return fileContents;
+					return nullptr;
 				}
 			};
 

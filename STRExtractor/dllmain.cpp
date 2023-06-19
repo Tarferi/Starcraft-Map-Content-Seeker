@@ -79,7 +79,7 @@ int main() {
 #endif
     uint32 sz = 0;
     uint32 szreq = 0;
-    realize0((char*)"C:\\Users\\Tom\\Documents\\StarCraft\\Maps\\Download\\! BEST_FASTEST.scm", tmp, sizeof(tmp), &sz, &szreq);
+    realize0((char*)"C:\\Users\\Tom\\Documents\\StarCraft\\Maps\\moje mapy\\test\\Raccoon City Remastered.scx", tmp, sizeof(tmp), &sz, &szreq);
 #ifndef STOCK_STORM
     UnloadStorm();
 #endif

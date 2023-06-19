@@ -13,6 +13,8 @@
 #include <crtdbg.h>
 #endif
 
+#define MAX_FILE_LIMIT (1024*1024*300)
+
 namespace nsEndian {
 	enum Enum {
 		BigEndian,
